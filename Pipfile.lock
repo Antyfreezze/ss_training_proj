@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b24e34c30b8f9569bc91f306b634455e47ea78ebeced360321230c6e25efa81b"
+            "sha256": "3357f8a80783057067e11cd4a0c2fcf8657e255107caad084c92bf8201671e81"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -30,6 +30,14 @@
             ],
             "index": "pypi",
             "version": "==0.14.0"
+        },
+        "asyncio-redis": {
+            "hashes": [
+                "sha256:e455952b399c3380d7d6e444b66c46183fc40df9536fafcb9ad7753d9e1520d7",
+                "sha256:fae40dc59c7268dfb9a44542cb3f48a885c8f5f7438b13f0dfec1fbd10a82369"
+            ],
+            "index": "pypi",
+            "version": "==0.14.3"
         },
         "flake8": {
             "hashes": [

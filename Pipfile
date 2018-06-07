@@ -10,6 +10,7 @@ sqlalchemy = "*"
 aiopg = "*"
 sanic-session = "*"
 pyjwt = "*"
+asyncio-redis = "*"
 
 [dev-packages]
 
