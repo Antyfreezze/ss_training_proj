@@ -14,6 +14,3 @@ class EngineSingleTon():
             cls._engine = await create_engine(cls._dsn)
         # cls._instance = await cls._engine.acquire()
         return cls._engine
-    
-    def __del__(cls):
-        cls._engine.close()
