@@ -17,4 +17,3 @@ class EngineSingleTon():
     
     def __del__(cls):
         cls._engine.close()
-        print('engine destroied')
