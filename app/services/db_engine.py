@@ -1,37 +1,20 @@
 import asyncio
 from aiopg.sa import create_engine
-from config import db
+from app.config import db
 
 
-class EngineSingleTone(object):
-    _dsn = (
-        'user={user}',
-        'dbname={db_name}',
-        'host={host}',
-        'password={password}'.format(**db)
-        )
-    
-    @asyncio.coroutine
-    def create_db_engine(dsn):
-        engine = yield from create_engine(_dsn)
-        return engine
-    
-    _engine = create_db_engine(_dsn)
-    _instance = None
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = object.__new__(cls)
+class EngineSingleTon():
+    _dsn ='user={user} host={host} password={password}'.format(**db)
+    _engine = None
+
+    @classmethod
+    async def create(cls):
+        if not cls._engine:
+            print(cls._engine)
+            cls._engine = await create_engine(cls._dsn)
+        # cls._instance = await cls._engine.acquire()
         return cls._engine
-        
-
-if __name__ == '__main__':
-    engine = EngineSingleTone()
-    print(id(engine))
-
-    engine2 = EngineSingleTone()
-    print(id(engine2))
-
-    if id(engine) == id(engine2):
-        print(True)
-    else:
-        print(False)
+    
+    def __del__(cls):
+        cls._engine.close()
+        print('engine destroied')
