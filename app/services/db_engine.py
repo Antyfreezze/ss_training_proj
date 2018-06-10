@@ -12,5 +12,4 @@ class EngineSingleTon():
         if not cls._engine:
             print(cls._engine)
             cls._engine = await create_engine(cls._dsn)
-        # cls._instance = await cls._engine.acquire()
         return cls._engine
