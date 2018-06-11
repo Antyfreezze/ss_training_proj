@@ -9,6 +9,5 @@ class EngineSingleTon():
     @classmethod
     async def create(cls):
         if not cls._engine:
-            print(cls._engine)
             cls._engine = await create_engine(cls._dsn)
         return cls._engine

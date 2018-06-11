@@ -1,5 +1,7 @@
 import datetime as dt
 import jwt
+import asyncio_redis
+from asyncio_redis.encoders import BytesEncoder
 from sanic.response import text
 from sanic.exceptions import Unauthorized
 from app.config import secret
@@ -19,10 +21,7 @@ async def _tokenizer():
 async def token_checker(request):
     token = request.cookies.get('token')
     if token:
-        try:
-            jwt.decode(token, KEY, ALGORITHM)
-        except jwt.ExpiredSignatureError:
-            raise Unauthorized('Signature has expired')
+        result = await _check_token_redis(token) 
     else:
         raise Unauthorized('Need to create account')
     return
@@ -36,6 +35,7 @@ async def login_data_checker(request):
     print(request.args.get('login'))
     stored_user_hash = await db.get_entry('user', login=(request.args.get('login')))
     if hashed_info == stored_user_hash:
+        await _insert_token_redis(token, login)
         return await _cookie_writer()
     else:
         raise Unauthorized('No such login')
@@ -46,3 +46,20 @@ async def _cookie_writer():
     response = text('')
     response.cookies['token'] = token
     return response
+
+
+async def _insert_token_redis(token, value):
+    connection = await asyncio_redis.Connection.create(host='localhost', port=6379, poolsize=10)
+    await connection.set(token, value)
+    connection.close()
+
+
+async def _check_token_redis(token):
+    cursor = await protocol.scan(match=token)
+    while True:
+        item = await cursor.fetchone()
+        if item is None:
+            raise Unauthorized('Need sign in') 
+        else:
+            print(item)
+
