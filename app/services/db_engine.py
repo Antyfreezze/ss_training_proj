@@ -1,10 +1,9 @@
-import asyncio
 from aiopg.sa import create_engine
 from app.config import db
 
 
 class EngineSingleTon():
-    _dsn ='user={user} host={host} password={password}'.format(**db)
+    _dsn ='user={user} host={host} dbname={name} password={password}'.format(**db)
     _engine = None
 
     @classmethod

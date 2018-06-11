@@ -1,30 +1,31 @@
 from sanic.response import json, text
-from app.processor.authorization import tokenize, token_checker
-from app.database import (delete_entry, upsert_entry,
-    get_entry)
-
+from sanic.exceptions import InvalidUsage
+from app.services.authorization import login_data_checker
+from app.services import database
+from marshmallow import ValidationError
+from app.resources.validation import UserSchema
 
 async def smoke(request):
     return text('Hello')
 
 
-# TODO: get token via jwt
 async def login(request):
-    token = await tokenize({request.args.get('user'): request.args.get('pass')})
-    response = text('')
-    response.cookies['token'] = token
-    response.cookies['token']['max-age'] = 20
-    test_cookie = response.cookies.get('session')
-    return text("Test cookie set to: {}".format(test_cookie))
+    print(request.raw_args)
+    try:
+        UserSchema().load(request.raw_args)
+    except ValidationError as err:
+        raise InvalidUsage(message=err.messages)
+    response = await login_data_checker(request)
+    return response
 
 
 # TODO: add functions for comunicate with DB
 async def project(request):
     if request.method == 'GET':
-        await get_entry(table, id)
+        await database.get_entry(table, entry_id)
         return text('this is project with GET')
     if request.method == 'POST':
-        await upsert_entry(table_name, id)
+        await upsert_entry(table_name, entry_id)
         return text('this is project with POST')
     if request.method == 'PUT':
         await upsert_entry(table_name, id)
@@ -32,3 +33,4 @@ async def project(request):
     if request.method == 'DELETE':
         await delete_entry(table_name, id)
         return text('this is project with DELETE')
+
