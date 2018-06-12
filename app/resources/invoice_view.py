@@ -2,21 +2,21 @@ from sanic.views import HTTPMethodView
 from app.resources.service_resource import project
 
 
-class ProjectView(HTTPMethodView):
-    async def get(self, request):
+class InvoiceView(HTTPMethodView):
+    async def get(self, request, project_id):
         return await project(request)
 
-    async def post(self, request):
+    async def post(self, request, project_id):
         return await project(request)
 
-    async def put(self, request):
+    async def put(self, request, project_id):
         return await project(request)
 
-    async def delete(self, request):
+    async def delete(self, request, project_id):
         return await project(request)
 
 
-class ProjectIdView(HTTPMethodView):
+class InvoiceIdView(HTTPMethodView):
     async def get(self, request, project_id):
         return await project(request, project_id)
 

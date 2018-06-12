@@ -1,10 +1,11 @@
+import logging
 from sanic import Sanic
 from sanic.views import HTTPMethodView
 
 from app.services.authorization import token_checker
 from app.resources.login_view import LoginView
 from app.resources.smoke_view import SmokeView
-from app.resources.project_view import ProjectView
+from app.resources.project_view import ProjectView, ProjectIdView
 
 from app.services.database import create_tables
 
@@ -13,6 +14,8 @@ app = Sanic(__name__)
 
 @app.listener('before_server_start')
 async def setup_db(app, loop):
+    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+    logging.info('Started')
     app.db = await create_tables()
 
 
@@ -23,4 +26,7 @@ async def session_checker(request):
 
 app.add_route(SmokeView.as_view(), '/smoke')
 app.add_route(ProjectView.as_view(), '/projects')
+app.add_route(ProjectIdView.as_view(), '/projects/<project_id>')
+# app.add_route(InvoiceView.as_view(), '/projects/<project_id>/invoices')
+# app.add_route(InvoiceIdView.as_view(), '/projects/<project_id>/invoices/<invoice_id>')
 app.add_route(LoginView.as_view(), '/login')

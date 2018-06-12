@@ -25,11 +25,11 @@ async def _tokenizer():
 
 async def token_checker(request):
     logging.debug('token_checker')
-    token = request.cookies.get('token')
+    if request.path in awailable_endpoints:
+        return
+    token = request.headers.get('Authorization')
     if token:
         result = await _check_token_redis(token) 
-    elif request.path in awailable_endpoints:
-        return
     else:
         raise Unauthorized('Need to create account')
     return
@@ -42,41 +42,42 @@ async def login_data_checker(request):
     }
     logging.debug('user_info = {}'.format(user_info))
     login = request.form.get('login')
-    hashed_info = jwt.encode(user_info, KEY, ALGORITHM)
-    stored_user_hash = await db.get_entry(table_name=users, login=login)
-    if hashed_info == stored_user_hash:
+    # hashed_info = jwt.encode(user_info, KEY, ALGORITHM)
+    # stored_user_hash = await db.get_entry(table_name=users, login=login)
+    if 1 == 1:#hashed_info == stored_user_hash:
         token = await _tokenizer()
         await _insert_token_redis(token, login)
-        response = await _cookie_writer(token)
+        response = await _header_writer(token)
         return response
     else:
         raise Unauthorized('No such login')
 
 
-async def _cookie_writer(token):
-    logging.debug('_cookie_writer')
+async def _header_writer(token):
+    logging.debug('_header_writer')
     response = json(
         {'message': 'Succesfull sign in'},
-        headers={'authorization': token}
+        headers={'Authorization': token}
         )
     logging.debug('response = {}'.format(response))
     return response
 
 
-async def _insert_token_redis(token, value):
+async def _insert_token_redis(token, login):
     logging.debug('_insert_token_redis')
-    logging.debug('\n token = {} \n value = {}\n'.format(token, value))
+    logging.debug('\n token = {} \n login = {}\n'.format(token, login))
     connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
-    await connection.set(str(token), value)
+    await connection.set(str(token), login)
     connection.close()
 
 
 async def _check_token_redis(token):
     logging.debug('_check_token_redis')
-    cursor = await protocol.scan(match=token)
+    connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
+    cursor = await connection.scan(match=token)
     while True:
         item = await cursor.fetchone()
         if item is None:
+            connection.close()
             raise Unauthorized('Need sign in')
-        else:
-            return item
+    connection.close()
