@@ -12,9 +12,8 @@ app = Sanic(__name__)
 
 
 @app.listener('before_server_start')
-async def setup_db():
-    app.db = await setup_db()
-    await create_tables()
+async def setup_db(app, loop):
+    app.db = await create_tables()
 
 
 @app.middleware('request')
