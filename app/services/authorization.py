@@ -1,30 +1,31 @@
 import logging
 import datetime as dt
+
 import jwt
 import asyncio_redis
+
 from asyncio_redis.encoders import BytesEncoder
 from sanic.response import text, json
 from sanic.exceptions import Unauthorized
+
 from app.services.models import users, projects, invoices
 from app.config import secret
 from app.services import database as db
+from app.domain import user
 
 
 KEY = secret['key']
 ALGORITHM = secret['alg']
-awailable_endpoints = ['/smoke', '/login']
+awailable_endpoints = ('/login',)
 
 
 async def _tokenizer():
-    logging.debug('_tokenizer')
     exp_time = dt.datetime.utcnow() + dt.timedelta(seconds=86400)
     token = jwt.encode({'exp': exp_time}, KEY, ALGORITHM)
-    logging.debug('token from tokenizer = {}'.format(token))
     return token
 
 
 async def token_checker(request):
-    logging.debug('token_checker')
     if request.path in awailable_endpoints:
         return
     token = request.headers.get('Authorization')
@@ -36,17 +37,14 @@ async def token_checker(request):
 
 
 async def login_data_checker(request):
-    logging.debug('logging_data_checker')
     user_info = {
         request.form.get('login'): request.form.get('password')
     }
-    logging.debug('user_info = {}'.format(user_info))
-    login = request.form.get('login')
-    # hashed_info = jwt.encode(user_info, KEY, ALGORITHM)
-    # stored_user_hash = await db.get_entry(table_name=users, login=login)
-    if 1 == 1:#hashed_info == stored_user_hash:
+    hashed_info = jwt.encode(user_info, KEY, ALGORITHM)
+    stored_user_hash = await user.get_hash(login=request.form.get('login'))
+    if hashed_info.decode("utf-8") == stored_user_hash[0]['password_hash']:
         token = await _tokenizer()
-        await _insert_token_redis(token, login)
+        await _insert_token_redis(token, request.form.get('login'))
         response = await _header_writer(token)
         return response
     else:
@@ -54,30 +52,26 @@ async def login_data_checker(request):
 
 
 async def _header_writer(token):
-    logging.debug('_header_writer')
     response = json(
         {'message': 'Succesfull sign in'},
         headers={'Authorization': token}
         )
-    logging.debug('response = {}'.format(response))
     return response
 
 
 async def _insert_token_redis(token, login):
-    logging.debug('_insert_token_redis')
-    logging.debug('\n token = {} \n login = {}\n'.format(token, login))
     connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
-    await connection.set(str(token), login)
-    connection.close()
+    try:
+        await connection.set(str(token), login)
+    finally:
+        connection.close()
 
 
 async def _check_token_redis(token):
-    logging.debug('_check_token_redis')
     connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
-    cursor = await connection.scan(match=token)
-    while True:
-        item = await cursor.fetchone()
+    try:
+        item = await connection.get(str(token))
         if item is None:
-            connection.close()
             raise Unauthorized('Need sign in')
-    connection.close()
+    finally:
+        connection.close()

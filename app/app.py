@@ -4,8 +4,8 @@ from sanic.views import HTTPMethodView
 
 from app.services.authorization import token_checker
 from app.resources.login_view import LoginView
-from app.resources.smoke_view import SmokeView
 from app.resources.project_view import ProjectView, ProjectIdView
+from app.resources.invoice_view import InvoiceView, InvoiceIdView
 
 from app.services.database import create_tables
 
@@ -24,9 +24,8 @@ async def session_checker(request):
     await token_checker(request)
 
 
-app.add_route(SmokeView.as_view(), '/smoke')
 app.add_route(ProjectView.as_view(), '/projects')
 app.add_route(ProjectIdView.as_view(), '/projects/<project_id>')
-# app.add_route(InvoiceView.as_view(), '/projects/<project_id>/invoices')
-# app.add_route(InvoiceIdView.as_view(), '/projects/<project_id>/invoices/<invoice_id>')
+app.add_route(InvoiceView.as_view(), '/projects/<project_id>/invoices')
+app.add_route(InvoiceIdView.as_view(), '/projects/<project_id>/invoices/<invoice_id>')
 app.add_route(LoginView.as_view(), '/login')
