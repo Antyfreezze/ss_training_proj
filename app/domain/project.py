@@ -2,7 +2,7 @@ import logging
 from psycopg2 import ProgrammingError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import select
-from app.services.models import projects
+from app.services.models import projects, invoices
 from app.services import database
 from app.config import db
 
@@ -28,8 +28,11 @@ async def insert_project(**kwargs):
 async def delete_project(project_id):
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
+        invoice_delete_query = invoices.delete().where(invoices.c.project_id == project_id)
         query = projects.delete().where(projects.c.id == int(project_id))
+        await conn.execute(invoice_delete_query)
         await conn.execute(query)
+        
 
 
 async def update_project(project_id, **kwargs):

@@ -10,24 +10,20 @@ class InvoiceView(HTTPMethodView):
         return response.json(result)
 
     async def post(self, request, project_id):
-        data = validation.InvoicesSchema().load(request.form)
-        await invoice.insert_invoice(project_id, request.form.get('description'))
-                            # project_id=data[0]['project_id'],
+        await invoice.insert_invoice(
+                            project_id=project_id,
                             # create_date=data[0]['create_date'],
-                            # description=data[0]['description'])
+                            description=request.form.get('description'))
         return response.json({"message": "The invoice was successfully created"})
 
 
 class InvoiceIdView(HTTPMethodView):
     async def get(self, request, project_id, invoice_id):
-        return await invoice.get_invoice(project_id, invoice_id)
+        result = await invoice.get_invoice(project_id, invoice_id)
+        return response.json(result)
 
     async def put(self, request, project_id, invoice_id):
-        data = validation.InvoicesSchema().load(request.form)
-        await invoice.update_invoice(invoice_id,
-                            # project_id=data[0]['project_id'],
-                            # create_date=data[0]['create_date'],
-                            description=data[0]['description'])
+        await invoice.update_invoice(invoice_id, description=request.form.get('description'))
         return response.json({"message": "The invoice was successfully updated"})
 
     async def delete(self, request, project_id, invoice_id):

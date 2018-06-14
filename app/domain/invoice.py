@@ -36,4 +36,5 @@ async def update_invoice(invoice_id, **kwargs):
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         query = invoices.update().where(invoices.c.id == invoice_id).values(**kwargs)
+        logging.debug('{}'.format(str(query)))
         await conn.execute(query)
