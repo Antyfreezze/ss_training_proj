@@ -1,4 +1,3 @@
-import logging
 from psycopg2 import ProgrammingError
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import select

@@ -12,7 +12,6 @@ class InvoiceView(HTTPMethodView):
     async def post(self, request, project_id):
         await invoice.insert_invoice(
                             project_id=project_id,
-                            # create_date=data[0]['create_date'],
                             description=request.form.get('description'))
         return response.json({"message": "The invoice was successfully created"})
 

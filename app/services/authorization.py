@@ -1,4 +1,3 @@
-import logging
 import datetime as dt
 
 import jwt

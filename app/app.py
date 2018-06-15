@@ -1,6 +1,4 @@
-import logging
 from sanic import Sanic
-from sanic.views import HTTPMethodView
 
 from app.services.authorization import token_checker
 from app.resources.login_view import LoginView
@@ -14,8 +12,6 @@ app = Sanic(__name__)
 
 @app.listener('before_server_start')
 async def setup_db(app, loop):
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    logging.info('Started')
     app.db = await create_tables()
 
 

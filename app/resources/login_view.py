@@ -1,4 +1,3 @@
-import logging
 from sanic.views import HTTPMethodView
 from app.services import validation
 from app.services import authorization
