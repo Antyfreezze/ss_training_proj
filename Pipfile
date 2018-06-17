@@ -12,6 +12,10 @@ sanic-session = "*"
 pyjwt = "*"
 asyncio-redis = "*"
 marshmallow = "*"
+asynctest = "*"
+aiohttp = "*"
+pytest = "*"
+sqlalchemy-utils = "*"
 
 [dev-packages]
 

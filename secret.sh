@@ -1,0 +1,9 @@
+export WEB_HOST='localhost';
+export WEB_PORT='4000';
+export DB_USERNAME='user';
+export DB_PASSWORD='password';
+export DB_NAME='ss_traing';
+export DB_HOST='localhost';
+export DB_PORT='5432';
+export SECRET='itsdangerousss';
+export ALGORITHM='HS256';

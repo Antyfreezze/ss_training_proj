@@ -15,9 +15,9 @@ class Engine():
             cls._engine = await create_engine(cls._dsn)
         return cls._engine
 
+#engine = Engine().create()
 
-async def create_tables():
-    engine = await Engine.create()
+async def create_tables(engine):
     async with engine.acquire() as conn:
         await conn.execute('''CREATE TABLE IF NOT EXISTS users (
             id serial PRIMARY KEY,
@@ -31,7 +31,16 @@ async def create_tables():
             id serial PRIMARY KEY,
             project_id int references projects(id),
             description varchar(255))''')
-                                                
+
+
+async def create_db(db_name):
+    async with create_engine('user={user} '
+                             'host={host} '
+                             'password={password}'.format(**db)) as engine:
+        async with engine.acquire() as connection:
+            await connection.execute('CREATE DATABASE {}'.format(db_name))
+    await engine.wait_closed()
+
 
 def _convert_resultproxy(result_proxy):
     dict_result = []
