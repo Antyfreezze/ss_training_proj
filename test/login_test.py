@@ -1,11 +1,21 @@
+import asyncio
 from app.app import app
 from asynctest import TestCase
+from test.fixtures.db_fixture import DBSetup
 
 
 class TestLogin(TestCase):
 
     def create_app(self):
         return app
+
+    # def setUpClass():
+    #     loop = asyncio.get_event_loop()
+    #     loop.run_until_complete(DBSetup.setup_database())
+    #     loop.close()
+    
+    # def tierDownClass():
+    #     DBSetup.drop_database()
 
     def test_login_get_not_alowed(self):
         request, response = app.test_client.get('/login')

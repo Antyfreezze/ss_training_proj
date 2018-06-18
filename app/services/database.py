@@ -1,6 +1,7 @@
+import asyncio_redis
 from aiopg.sa import create_engine
 from psycopg2 import ProgrammingError
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.dialects.postgresql import insert, JSONB
 from sqlalchemy.sql import select
 from app.config import db
 
@@ -13,6 +14,16 @@ class Engine():
     async def create(cls):
         if not cls._engine:
             cls._engine = await create_engine(cls._dsn)
+        return cls._engine
+
+
+class RedisEngine():
+    _engine = None
+
+    @classmethod
+    async def create(cls):
+        if not cls._engine:
+            cls._engine = await asyncio_redis.Connection.create(host='localhost', port=6379)
         return cls._engine
 
 
@@ -31,6 +42,17 @@ async def create_tables():
             id serial PRIMARY KEY,
             project_id int references projects(id),
             description varchar(255))''')
+        await conn.execute(''' CREATE TABLE IF NOT EXISTS acl
+            project_id references projects(id),
+            rights JSONB''')
+
+async def create_db(db_name):
+    async with create_engine('user={user} '
+                             'host={host} '
+                             'password={password}'.format(**db)) as engine:
+        async with engine.acquire() as connection:
+            await connection.execute('CREATE DATABASE {}'.format(db_name))
+    await engine.wait_closed()
                                                 
 
 def _convert_resultproxy(result_proxy):

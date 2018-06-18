@@ -29,10 +29,10 @@ async def token_checker(request):
         return
     token = request.headers.get('Authorization')
     if token:
-        result = await _check_token_redis(token) 
+        result = await _check_token_redis(token)
     else:
         raise Unauthorized('Need to create account')
-    return
+    return result
 
 
 async def login_data_checker(request):
@@ -59,7 +59,7 @@ async def _header_writer(token):
 
 
 async def _insert_token_redis(token, login):
-    connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
+    connection = await db.RedisEngine.create()
     try:
         await connection.set(str(token), login)
     finally:
@@ -67,9 +67,11 @@ async def _insert_token_redis(token, login):
 
 
 async def _check_token_redis(token):
-    connection = await asyncio_redis.Connection.create(host='localhost', port=6379)
+    connection = await db.RedisEngine.create()
+    item = None
     try:
         item = await connection.get(str(token))
+        print(item)
         if item is None:
             raise Unauthorized('Need sign in')
     finally:
