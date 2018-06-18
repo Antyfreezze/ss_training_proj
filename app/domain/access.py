@@ -1,3 +1,5 @@
+from app.services.models import projects
+from sanic import response
 from app.services import authorization
 from app.services import database
 
@@ -5,16 +7,29 @@ from app.services import database
 async def checker(request):
     token = request.form.get('token')
     login = await authorization._check_token_redis(token)
-    query = projects.select(projects.c.acl[login])
+    query = models.projects.select(projects.c.acl[login])
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         result = await conn.execute(query)
     result = database._convert_resultproxy(result)
-    print(result)
+    return result
 
 
 async def sharing(request):
-    pass
+    permission = await checker(request)
+    if permission == ['DELETE']:
+        data = {
+            request.form['login']: request.form['permission']
+        }
+        query = (projects.insert(projects.c.acl = data)
+            .where(projects.id = request.form['project_id']))
+        engine = await database.Engine.create()
+        async with engine.acquire() as conn:
+            conn.execute(query)
+        return response.json({'message': 'Permission granted'})
+    else:
+        return response.json({'message':'Permission denied'})
+    
 
 async def creator(request):
     pass

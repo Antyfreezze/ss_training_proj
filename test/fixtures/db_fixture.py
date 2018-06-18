@@ -30,7 +30,7 @@ class DBSetup():
     @classmethod
     async def setup_database(cls):
         # cls.drop_db()
-        await database.create_db('test_db')
+        await database.create_db(db['name'])
         _engine = await database.Engine.create()
         await database.create_tables()
         await cls.data_inputer(_engine)
