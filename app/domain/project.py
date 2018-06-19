@@ -18,7 +18,7 @@ async def get_project(user_id, project_id=None):
 
 
 async def insert_project(**kwargs):
-    query = projects.insert().values(**kwargs)
+    query = projects.insert().values(data, **kwargs)
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         await conn.execute(query)

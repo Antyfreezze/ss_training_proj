@@ -17,19 +17,24 @@ async def checker(request):
 
 async def sharing(request):
     permission = await checker(request)
-    if permission == ['DELETE']:
+    if permission != ['DELETE']:
+        return response.json({'message':'Permission denied'})
+    else:
         data = {
             request.form['login']: request.form['permission']
         }
-        query = (projects.insert(projects.c.acl = data)
-            .where(projects.id = request.form['project_id']))
+        query = (projects.update(projects.c.acl == data)
+            .where(projects.id == request.form['project_id']))
         engine = await database.Engine.create()
         async with engine.acquire() as conn:
             conn.execute(query)
         return response.json({'message': 'Permission granted'})
-    else:
-        return response.json({'message':'Permission denied'})
     
 
 async def creator(request):
-    pass
+    token = request.form.get('token')
+    login = await authorization._check_token_redis(token)
+    data = {
+        login : ['DELETE']
+    }
+    return data

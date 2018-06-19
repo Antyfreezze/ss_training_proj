@@ -11,9 +11,14 @@ class ProjectView(HTTPMethodView):
 
     async def post(self, request):
         data = validation.ProjectsSchema().load(request.form)
-        await project.insert_project( 
+        login = await authorization._check_token_redis(request.headers['Authorization'])
+        acl = {
+            login : ['DELETE']
+        }
+        await project.insert_project(
                             user_id=data[0]['user_id'],
-                            create_date=data[0]['create_date'])
+                            create_date=data[0]['create_date'],
+                            acl = acl)
         return response.json({"message": "The project was succesfully created"})
 
 
