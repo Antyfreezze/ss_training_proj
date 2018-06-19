@@ -11,6 +11,10 @@ from app.services.database import create_tables
 
 app = Sanic(__name__)
 
+# @app.listener('before_server_start')
+# async def setup_db(app, loop):
+#     app.db = await create_tables()
+
 
 @app.middleware('request')
 async def session_checker(request):

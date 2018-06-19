@@ -1,40 +1,27 @@
 from app.services.models import projects
 from sanic import response
-from app.services import authorization
-from app.services import database
+from sanic.exceptions import Unauthorized
+from sqlalchemy.sql import select
+from app.services import authorization, database, models
 
 
 async def checker(request):
-    token = request.form.get('token')
-    login = await authorization._check_token_redis(token)
-    query = models.projects.select(projects.c.acl[login])
+    token = request.headers.get('Authorization')
+    user_id = await authorization._check_token_redis(token)
+    query = select([projects.c.acl[user_id]])
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         result = await conn.execute(query)
-    result = database._convert_resultproxy(result)
-    return result
+    return database._convert_resultproxy(result)
 
 
 async def sharing(request):
-    permission = await checker(request)
-    if permission != ['DELETE']:
-        return response.json({'message':'Permission denied'})
-    else:
-        data = {
-            request.form['login']: request.form['permission']
-        }
-        query = (projects.update(projects.c.acl == data)
-            .where(projects.id == request.form['project_id']))
-        engine = await database.Engine.create()
-        async with engine.acquire() as conn:
-            conn.execute(query)
-        return response.json({'message': 'Permission granted'})
-    
-
-async def creator(request):
-    token = request.form.get('token')
-    login = await authorization._check_token_redis(token)
     data = {
-        login : ['DELETE']
+        user_id: request.form['permission']
     }
-    return data
+    query = (projects.update(projects.c.acl == data)
+        .where(projects.id == request.form['project_id']))
+    engine = await database.Engine.create()
+    async with engine.acquire() as conn:
+        conn.execute(query)
+    return response.json({'message': 'Permission granted'})

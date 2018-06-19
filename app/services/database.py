@@ -37,14 +37,13 @@ async def create_tables():
         await conn.execute('''CREATE TABLE IF NOT EXISTS projects (
             id serial PRIMARY KEY,
             user_id int references users(id),
-            create_date date)''')
+            create_date date,
+            acl JSONB)''')
         await conn.execute('''CREATE TABLE IF NOT EXISTS invoices (
             id serial PRIMARY KEY,
             project_id int references projects(id),
             description varchar(255))''')
-        await conn.execute(''' CREATE TABLE IF NOT EXISTS acl
-            project_id references projects(id),
-            rights JSONB''')
+
 
 async def create_db(db_name):
     async with create_engine('user={user} '

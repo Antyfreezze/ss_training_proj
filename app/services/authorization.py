@@ -43,7 +43,7 @@ async def login_data_checker(request):
     stored_user_hash = await user.get_hash(login=request.form.get('login'))
     if hashed_info.decode("utf-8") == stored_user_hash:
         token = await _tokenizer()
-        user_id = user.get_id(login)
+        user_id = await user.get_id(request.form.get('login'))
         await _insert_token_redis(token, user_id)
         response = await _header_writer(token)
         return response
@@ -59,21 +59,15 @@ async def _header_writer(token):
     return response
 
 
-async def _insert_token_redis(token, login):
+async def _insert_token_redis(token, user_id):
     connection = await db.RedisEngine.create()
-    try:
-        await connection.set(str(token), login)
-    finally:
-        connection.close()
+    await connection.set(str(token), str(user_id))
 
 
 async def _check_token_redis(token):
     connection = await db.RedisEngine.create()
-    item = None
-    try:
-        item = await connection.get(str(token))
-        print(item)
-        if item is None:
-            raise Unauthorized('Need sign in')
-    finally:
-        connection.close()
+    item = await connection.get(str(token))
+    if item:
+        return item
+    else:
+        raise Unauthorized('Need sign in')
