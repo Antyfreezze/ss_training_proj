@@ -3,7 +3,7 @@ from sanic import response
 from app.services import authorization
 from app.services import database
 
-# need refactor
+
 async def checker(request):
     token = request.form.get('token')
     login = await authorization._check_token_redis(token)

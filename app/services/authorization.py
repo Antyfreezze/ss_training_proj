@@ -41,9 +41,10 @@ async def login_data_checker(request):
     }
     hashed_info = jwt.encode(user_info, KEY, ALGORITHM)
     stored_user_hash = await user.get_hash(login=request.form.get('login'))
-    if hashed_info.decode("utf-8") == stored_user_hash[0]['password_hash']:
+    if hashed_info.decode("utf-8") == stored_user_hash:
         token = await _tokenizer()
-        await _insert_token_redis(token, request.form.get('login'))
+        user_id = user.get_id(login)
+        await _insert_token_redis(token, user_id)
         response = await _header_writer(token)
         return response
     else:

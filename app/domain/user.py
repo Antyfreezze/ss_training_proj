@@ -10,4 +10,14 @@ async def get_hash(login):
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         result = await conn.execute(query)
-    return database._convert_resultproxy(result)
+    row = resultProxy.fetchone()
+    return row['password_hash']
+
+
+async def get_id(login):
+    query = select([users.columns.password_hash]).where(users.c.login == login)
+    engine = await database.Engine.create()
+    async with engine.acquire() as conn:
+        result = await conn.execute(query)
+    row = resultProxy.fetchone()
+    return row['id']
