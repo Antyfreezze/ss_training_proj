@@ -3,6 +3,7 @@ from sanic import response
 from sanic.exceptions import Unauthorized
 from sqlalchemy.sql import select
 from app.services import authorization, database, models
+from app.domain import user
 
 
 async def checker(request):
@@ -16,8 +17,10 @@ async def checker(request):
 
 
 async def sharing(request):
+
+    user_id = await user.get_id(request.form['login'])
     data = {
-        user_id: request.form['permission']
+        user_id : request.form['permission']
     }
     query = (projects.update(projects.c.acl == data)
         .where(projects.id == request.form['project_id']))

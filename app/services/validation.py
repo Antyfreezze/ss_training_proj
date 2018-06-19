@@ -21,9 +21,10 @@ class UsersLoginSchema(BaseSchema):
 
 
 class ProjectsSchema(BaseSchema):
-    id = fields.Integer(dump_only=True, required=True)
-    user_id = fields.Integer(required=True)
-    create_date = fields.Date(required=True)
+    login = fields.String(required=True)
+    project_id = fields.Integer(required=True)
+    permission = fields.String(required=True)
+    
 
 
 class InvoicesSchema(BaseSchema):
