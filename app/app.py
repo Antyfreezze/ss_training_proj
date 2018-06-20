@@ -7,10 +7,18 @@ from app.resources.project_view import ProjectView, ProjectIdView
 from app.resources.invoice_view import InvoiceView, InvoiceIdView
 from app.resources.access_view import AccessView
 
-from app.services.database import create_tables
+from app.services.database import create_tables, Engine, RedisEngine
 
 app = Sanic(__name__)
 
+@app.listener('after_server_stop')
+async def close_db(app, loop):
+    engine = await Engine.create()
+    engine.close()
+    await engine.wait_closed()
+    redis_engine = await RedisEngine.create()
+    redis_engine.close()
+    
 
 @app.middleware('request')
 async def session_checker(request):

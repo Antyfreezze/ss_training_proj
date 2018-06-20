@@ -1,16 +1,18 @@
 from psycopg2 import ProgrammingError
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.sql import select
+from sqlalchemy.sql import select, null
 from app.services.models import projects, invoices
 from app.services import database
 from app.config import db
 
+view_access = ['DELETE', 'UPDATE', 'VIEW']
 
 async def get_project(user_id, project_id=None):
     if project_id:
-        query = projects.select().where(projects.c.id == project_id)
+        query = projects.select(projects.c.id == project_id and
+                                projects.c.acl[user_id].has_any(view_access))
     else:
-        query = projects.select().where(projects.c.user_id == user_id)
+        query = projects.select(projects.c.acl.has_key(user_id))
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         result = await conn.execute(query)

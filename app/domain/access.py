@@ -6,14 +6,13 @@ from app.services import authorization, database, models
 from app.domain import user
 
 
-async def checker(request):
-    token = request.headers.get('Authorization')
-    user_id = await authorization._check_token_redis(token)
-    query = select([projects.c.acl[user_id]])
+async def checker(project_id):
+    query = projects.select(projects.c.id == project_id)
     engine = await database.Engine.create()
     async with engine.acquire() as conn:
         result = await conn.execute(query)
-    return database._convert_resultproxy(result)
+        row = await result.fetchone()
+    return row['acl']
 
 
 async def sharing(request):

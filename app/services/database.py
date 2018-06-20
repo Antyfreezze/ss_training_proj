@@ -26,6 +26,9 @@ class RedisEngine():
             cls._engine = await asyncio_redis.Connection.create(host='localhost', port=6379)
         return cls._engine
 
+    def __del__(cls):
+        connection.close()
+        
 
 async def create_tables():
     engine = await Engine.create()
