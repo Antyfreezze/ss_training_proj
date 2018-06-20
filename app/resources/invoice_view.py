@@ -53,7 +53,7 @@ class InvoiceIdView(HTTPMethodView):
         user_id = await authorization._check_token_redis(request.headers['Authorization'])
         permission = await access.checker(project_id)
         if permission[user_id][0] in ['DELETE']:
-            await invoice.delete_invoice(project_id, invoice_id)
+            await invoice.delete_invoice(invoice_id)
             return response.json({"message": "The invoice was successfully deleted"})
         else:
             raise Unauthorized('Permission denied')
