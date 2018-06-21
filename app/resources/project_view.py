@@ -8,7 +8,8 @@ from app.services import validation, authorization
 
 class ProjectView(HTTPMethodView):
     async def get(self, request):
-        result = await project.get_project(request.args.get('user_id'))
+        user_id = await authorization._check_token_redis(request.headers['Authorization'])
+        result = await project.get_project(user_id)
         return response.json(result)
 
     async def post(self, request):
@@ -25,23 +26,25 @@ class ProjectView(HTTPMethodView):
 
 class ProjectIdView(HTTPMethodView):
     async def get(self, request, project_id):
-        result = await project.get_project(request.args.get('user_id'), project_id)
+        user_id = await authorization._check_token_redis(request.headers['Authorization'])
+        result = await project.get_project(user_id, project_id)
         return response.json(result)
 
     async def put(self, request, project_id):
-        permission = await access.checker(request)
-        if permission[0]['anon_1'] == 'VIEW':
+        user_id = await authorization._check_token_redis(request.headers['Authorization'])
+        permission = await access.checker(project_id)
+        if permission[user_id][0] == 'VIEW':
             raise Unauthorized('Permission denied')
         else:
-            user_id = await authorization._check_token_redis(request.headers['Authorization'])
             await project.update_project(project_id, 
                                 user_id=user_id,
                                 create_date=request.form.get('date'))
             return response.json({"message": "The project succesfully apdated"})
 
     async def delete(self, request, project_id):
-        permission = await access.checker(request)
-        if permission[0]['anon_1'] == 'DELETE':
+        user_id = await authorization._check_token_redis(request.headers['Authorization'])
+        permission = await access.checker(project_id)
+        if permission[user_id][0] == 'DELETE':
             await project.delete_project(project_id)
             return response.json({"message": "The project was succesfully deleted"})
         else:

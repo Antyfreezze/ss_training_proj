@@ -42,7 +42,6 @@ class InvoiceIdView(HTTPMethodView):
     async def put(self, request, project_id, invoice_id):
         user_id = await authorization._check_token_redis(request.headers['Authorization'])
         permission = await access.checker(project_id)
-        print(permission[user_id])
         if permission[user_id][0] in ['UPDATE', 'DELETE']:
             await invoice.update_invoice(invoice_id, description=request.form.get('description'))
             return response.json({"message": "The invoice was successfully updated"})

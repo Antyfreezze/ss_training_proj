@@ -30,3 +30,10 @@ class ProjectsSchema(BaseSchema):
 class InvoicesSchema(BaseSchema):
     id = fields.Integer(dump_only=True, required=True)
     description = fields.String()
+
+
+class AccessSharingScheme(BaseSchema):
+    subject = fields.String(required=True)
+    object_id = fields.Integer(required=True)
+    permission = fields.String(required=True)
+    login = fields.String(required=True)
