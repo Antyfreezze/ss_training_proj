@@ -34,6 +34,6 @@ class InvoicesSchema(BaseSchema):
 
 class AccessSharingScheme(BaseSchema):
     subject = fields.String(required=True)
-    object_id = fields.Integer(required=True)
+    project_id = fields.Integer(required=True)
     permission = fields.String(required=True)
     login = fields.String(required=True)
